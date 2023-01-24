@@ -30,6 +30,6 @@ private async void setNotifyIconAsync()
 ```csharp
 notifyIcon.Icon = bitmapToIcon(ToGrayBitmap(img, 60, 60));
 ```
-将消息队列中的字节数组转换为Bitmap，再转换为Icon，最后赋值给notifyIcon的Icon属性字段。但是快速地刷新该属性字段会导致文件资源管理器不响应甚至崩溃。
+将消息队列中的字节数组转换为```Bitmap```，再转换为```Icon```，最后赋值给```notifyIcon```的```Icon```属性字段。但是快速地刷新该属性字段会导致文件资源管理器不响应甚至崩溃。
 
 就这样吧，随缘解决，太菜了…
