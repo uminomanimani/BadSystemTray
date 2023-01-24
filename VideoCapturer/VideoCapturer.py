@@ -35,7 +35,7 @@ def main():
     
     input()
 
-    vc = cv2.VideoCapture("C:/Users/ma_li/Desktop/BadAppleSystemTray/BadAppleSystemTray/VideoCapturer/Bad Apple.mp4")
+    vc = cv2.VideoCapture("./Bad Apple.mp4")
     b = vc.isOpened()
     fps = vc.get(cv2.CAP_PROP_FPS)
     idx = 0
