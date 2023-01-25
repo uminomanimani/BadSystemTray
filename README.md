@@ -8,7 +8,7 @@
 
 [YouTube](https://youtu.be/FtutLA63Cp8)
 
-[示波器](https://www.bilibili.com/video/BV1Et411W743)
+[有示波器的地方，Bad apple可能会迟到，但从未缺席！](https://www.bilibili.com/video/BV1Et411W743)
 
 
 <h2>原理</h2>
