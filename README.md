@@ -69,4 +69,4 @@ notifyIcon.Icon = bitmapToIcon(ToGrayBitmap(img, 60, 60));
 
 <h2>写在最后</h2>
 
-随缘写吧，毕竟太菜。另外关注[@嘉然](https://space.bilibili.com/672328094)，顿顿解馋！关注[@永雏塔菲](https://space.bilibili.com/1265680561)喵，关注永雏塔菲谢谢喵！
+目前还没想到对策，随缘改吧，毕竟太菜。另外关注[@嘉然](https://space.bilibili.com/672328094)，顿顿解馋！关注[@永雏塔菲](https://space.bilibili.com/1265680561)喵，关注永雏塔菲谢谢喵！
