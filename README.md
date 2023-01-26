@@ -31,9 +31,9 @@
 - Python 3
 - C++ 11
 - C# 8.0
-- 速效救心丸
-- 米诺地尔生发酊
-- 《活着》余华，作家出版社
+- [速效救心丸](https://item.jkcsjd.com/3810395.html)
+- [米诺地尔生发酊](https://item.yiyaojd.com/100009773041.html)
+- [《活着》](http://product.dangdang.com/1612701486.html)余华，作家出版社
 
 ## 测试效果
 
