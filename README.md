@@ -4,7 +4,7 @@
   - [简介](#简介)
   - [原理](#原理)
   - [要求](#要求)
-  - [测试效果](#测试效果)
+  - [理想效果](#理想效果)
   - [现状](#现状)
   - [写在最后](#写在最后)
 
@@ -22,7 +22,14 @@
 
 ## 原理
 
-通过OpenCV逐帧读取视频，转换成灰度图并切割后通过socket分发至 $7 \times 7 = 49$ 个WinForm应用里，WinForm通过适当的格式转换将ICO格式的图片传给```notifyIcon```控件。
+通过OpenCV逐帧读取视频，转换成灰度图并切割后通过socket发送至WinForm应用，其包含 $7 \times 7 = 49$ 个notifyIcon控件：
+
+```csharp
+//Main.Designer.cs
+private System.Windows.Forms.NotifyIcon[] notifyIcons = new System.Windows.Forms.NotifyIcon[49];
+```
+
+WinForm通过适当的格式转换将ICO格式的图片传给```notifyIcon```控件。
 
 ## 要求
 
@@ -36,33 +43,35 @@
 - [米诺地尔生发酊](https://item.yiyaojd.com/100009773041.html)
 - [《活着》](http://product.dangdang.com/1612701486.html)余华，作家出版社
 
-## 测试效果
+## 理想效果
 
-算不上流畅播放，但是已经达到了惊人的 $1$ 帧每秒，毕竟一帧能看，两帧流畅，三帧电竞（~~逃~~），截图如下：
 <div align="center"><img src="./image/test.png" alt=""></div>
+
+理想是丰满的，现实是骨感的。
 
 ## 现状
 
-由于写代码的时间比上写readme的时间高达惊人的 $1:9$ ，目前还有以下问题没有解决（~~毕竟代码可以丑可以菜，readme一定要显得用心~~）：
+算不上流畅播放，但是已经达到了惊人的 $3$ 帧每秒，毕竟一帧能看，两帧流畅，三帧电竞（~~逃~~）。此外，由于写代码的时间比上写readme的时间高达惊人的 $1:9$ ，目前还有以下问题没有解决（~~毕竟代码可以丑可以菜，readme一定要显得用心~~）：
 
 ```csharp
 //Main.cs
 private async void setNotifyIconAsync()
 {
-    await Task.Run(() => {
-        byte[] oldImage = new byte[3600];
-        while(true)
+    await Task.Run(() =>
+    {
+        int counter = 0;
+        while (true)
         {
-            //imageData是一个队列，是线程不安全的，因此在异步方法中访问之前需要上锁
+            //System.Collections.Generic.Queue<T>是非线程安全的，因此访问它之前要上锁
             mutex.WaitOne();
             if (imageData.Count > 0)
             {
-                var img = imageData.Dequeue();
-                if(bytesEqual(ref oldImage, ref img))
-                {
-                    notifyIcon.Icon = bitmapToIcon(ToGrayBitmap(img, 60, 60));
-                    oldImage = img;
-                }
+                var imgBytes = imageData.Dequeue();
+                var icon = bitmapToIcon(toGrayBitmap(imgBytes, 60, 60));
+                notifyIcons[counter].Icon = icon;
+                //要及时释放句柄，不然会内存泄漏，被Windows干掉
+                DestroyIcon(icon.Handle);
+                counter = counter >= 48 ? 0 : counter + 1;
             }
             //释放锁
             mutex.ReleaseMutex();
@@ -71,11 +80,7 @@ private async void setNotifyIconAsync()
 }
 ```
 
-其中，
-```csharp
-notifyIcon.Icon = bitmapToIcon(ToGrayBitmap(img, 60, 60));
-```
-将消息队列中的字节数组转换为```Bitmap```，再转换为```Icon```，最后赋值给```notifyIcon```的```Icon```属性字段。但是快速地刷新该属性字段会导致文件资源管理器慢响应、不响应甚至崩溃。
+考虑到TCP按序发送以及队列先进先出的特性，这里定义了一个循环自增的```counter```变量来确定收到的图片交给哪个```notifyIcon```控件。但实际运行起来会发生画面偏移的情况：
 
 ## 写在最后
 
