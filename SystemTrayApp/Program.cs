@@ -16,16 +16,9 @@ namespace SystemTrayApp
         [STAThread]
         static void Main(string[] args)
         {
-            int ID = 0;
-            if (args.Length != 1)
-                return;
-            Regex r = new Regex(@"\b([0-9]|[1-9][0-9])\b");
-            if (!r.IsMatch(args[0]) && args[0].Length > 2)
-                return;
-            ID = int.Parse(args[0]);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Main(ID));
+            Application.Run(new Main());
         }
     }
 }

@@ -30,25 +30,8 @@ int argParser(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-     if (argParser(argc, argv) == -1)
-         return 0;
-     if(!fileExist(std::string(argv[2])))
-     {
-         std::endl(std::cerr << argv[2] << " does not exist.");
-         return 0;
-     }
-     //run the python script asynchronically
-     std::string app = "python.exe ";
-     std::thread([=]()-> void { system((app + std::string(argv[2])).c_str()); }).detach();
-
-    //run the CSharp Application asynchronically
-    for(int i = std::stoi(argv[4]); i >= 0; --i)
-    {
-        std::string app = "SystemTrayApp.exe ";
-        app += std::to_string(i);
-        std::thread([=]()-> void{ system(app.c_str()); }).detach();
-        Sleep(100);
-    }
+    std::thread([]()->void { system("python.exe VideoCapturer.py"); }).detach();
+    std::thread([]()->void { system("SystemTrayApp.exe"); }).detach();
     while(true)
     {
         Sleep(50000);

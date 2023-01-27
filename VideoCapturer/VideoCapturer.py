@@ -3,19 +3,13 @@ import cv2
 import socket
 import matplotlib.pyplot as plt
 
-addrs = dict()
 server = socket.socket()
 server.bind(("127.0.0.1", 10086))
 server.listen()
-i = 0
-while i < 49:
-    s, addr = server.accept()
-    data = s.recv(1)
-    data = list(data)
-    print(data)
-    print(addr)
-    i = i + 1
-    addrs[data[0]] = s
+
+s, addr = server.accept()
+print(addr)
+
 print("Handshake Over.")
 
 def windowSlide(frame : np.ndarray, size : int, stride : int) -> list:
@@ -33,13 +27,14 @@ def windowSlide(frame : np.ndarray, size : int, stride : int) -> list:
 
 def main():
     
+    print("input anything to start:", end="")
     input()
 
     vc = cv2.VideoCapture("./Bad Apple.mp4")
     b = vc.isOpened()
-    fps = vc.get(cv2.CAP_PROP_FPS)
-    idx = 0
-    freq = 5
+
+    # fps = vc.get(cv2.CAP_PROP_FPS)
+    c = 0
     while True:
         ret, img = vc.read()
         if img is None:
@@ -48,7 +43,10 @@ def main():
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         l = windowSlide(img, 100 * 1080 // 1792, 182 * 1080 // 1792)
         for i in range(len(l)):
-            addrs[i].send(l[i])
+            s.send(i.to_bytes())
+            s.send(l[i])
+        print(f"\t发送了第{c}帧。")
+        c = c + 1
         del img
     
     vc.release()

@@ -18,44 +18,50 @@ namespace SystemTrayApp
 {
     public partial class Main : Form
     {
-        public Main(int ID)
+        public Main()
         {
             InitializeComponent();
-            if (ID == 49) Environment.Exit(0);
-            this.ID = ID;
-            this.notifyIcon.Text = ID.ToString();
             setNotifyIconAsync();
             getRemoteData();
         }
-        private int ID = -1;
         private Queue<byte[]> imageData = new Queue<byte[]>();
         Mutex mutex = new Mutex();
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = CharSet.Auto)]
+        extern static bool DestroyIcon(IntPtr handle);
 
-        bool bytesEqual(ref byte[] l, ref byte[] r)
-        {
-            if (l.Length != r.Length) return false;
-            for (int i = 0; i < l.Length; i++)
-            {
-                if (l[i] != r[i]) return false;
-            }
-            return true;
-        }
+        //bool bytesEqual(ref byte[] l, ref byte[] r)
+        //{
+        //    if (l.Length != r.Length) return false;
+        //    for (int i = 0; i < l.Length; i++)
+        //    {
+        //        if (l[i] != r[i]) return false;
+        //    }
+        //    return true;
+        //}
+        int round = 0;
+        int counter = 0;
 
         private async void setNotifyIconAsync()
         {
-            await Task.Run(() => {
-                byte[] oldImage = new byte[3600];
-                while(true)
+            await Task.Run(() =>
+            {
+                while (true)
                 {
                     mutex.WaitOne();
                     if (imageData.Count > 0)
                     {
-                        var img = imageData.Dequeue();
-                        if(bytesEqual(ref oldImage, ref img))
+                        var imgBytes = imageData.Dequeue();
+                        var icon = bitmapToIcon(toGrayBitmap(imgBytes, 60, 60));
+                        notifyIcons[counter].Icon = icon;
+                        //要及时释放句柄，不然会内存泄漏，被Windows干掉
+                        DestroyIcon(icon.Handle);
+                        if (counter == 48)
                         {
-                            notifyIcon.Icon = bitmapToIcon(ToGrayBitmap(img, 60, 60));
-                            oldImage = img;
+                            counter = 0;
+                            ++round;
                         }
+                        else
+                            counter++;
                     }
                     mutex.ReleaseMutex();
                 }
@@ -68,8 +74,7 @@ namespace SystemTrayApp
             tcpClient.Connect("127.0.0.1", 10086);
             NetworkStream stream = tcpClient.GetStream();
 
-            stream.Write(new byte[] { (byte)this.ID }, 0, 1);
-            byte[] b = new byte[3600];
+            byte[] b = new byte[3604];
             while (true)
             {
                 int x = stream.Read(b, 0, b.Length);
@@ -79,7 +84,7 @@ namespace SystemTrayApp
                 imageData.Enqueue(b);
                 mutex.ReleaseMutex();
 
-                System.Threading.Thread.Sleep(100);
+                //System.Threading.Thread.Sleep(100);
             }
 
             stream.Close();
@@ -90,6 +95,7 @@ namespace SystemTrayApp
         {
             IntPtr hIcon = b.GetHicon();
             Icon icon = Icon.FromHandle(hIcon);
+
             return icon;
         }
 
@@ -100,7 +106,7 @@ namespace SystemTrayApp
         /// <param name="width">图像宽度</param>  
         /// <param name="height">图像高度</param>  
         /// <returns>位图</returns>  
-        public Bitmap ToGrayBitmap(byte[] rawValues, int width, int height)
+        public Bitmap toGrayBitmap(byte[] rawValues, int width, int height)
         {
             //// 申请目标位图的变量，并将其内存区域锁定  
             Bitmap bmp = new Bitmap(width, height, PixelFormat.Format8bppIndexed);

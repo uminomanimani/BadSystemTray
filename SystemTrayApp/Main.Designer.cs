@@ -30,14 +30,19 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
-            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            for(int i = 0; i < notifyIcons.Length; i++)
+            {
+                notifyIcons[i] = new System.Windows.Forms.NotifyIcon(this.components);
+            }
+
+            for(int i = 0; i != notifyIcons.Length; i++)
+            {
+                this.notifyIcons[i].Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
+                this.notifyIcons[i].Text = i.ToString();
+                this.notifyIcons[i].Visible = true;
+            }
+
             this.SuspendLayout();
-            // 
-            // notifyIcon
-            // 
-            this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
-            this.notifyIcon.Text = "notifyIcon";
-            this.notifyIcon.Visible = true;
             // 
             // Main
             // 
@@ -49,12 +54,10 @@
             this.Text = "Form";
             this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
             this.ResumeLayout(false);
-
         }
 
         #endregion
-
-        private System.Windows.Forms.NotifyIcon notifyIcon;
+        private System.Windows.Forms.NotifyIcon[] notifyIcons = new System.Windows.Forms.NotifyIcon[49];
     }
 }
 
