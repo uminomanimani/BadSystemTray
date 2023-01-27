@@ -38,13 +38,12 @@ namespace SystemTrayApp
         //    }
         //    return true;
         //}
-        int round = 0;
-        int counter = 0;
 
         private async void setNotifyIconAsync()
         {
             await Task.Run(() =>
             {
+                int counter = 0;
                 while (true)
                 {
                     mutex.WaitOne();
@@ -55,13 +54,7 @@ namespace SystemTrayApp
                         notifyIcons[counter].Icon = icon;
                         //要及时释放句柄，不然会内存泄漏，被Windows干掉
                         DestroyIcon(icon.Handle);
-                        if (counter == 48)
-                        {
-                            counter = 0;
-                            ++round;
-                        }
-                        else
-                            counter++;
+                        counter = counter >= 48 ? 0 : counter + 1;
                     }
                     mutex.ReleaseMutex();
                 }

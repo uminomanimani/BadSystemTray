@@ -2,8 +2,8 @@
 
 - [一个在系统托盘图标阵列中播放Bad Apple!!的项目](#一个在系统托盘图标阵列中播放bad-apple的项目)
   - [简介](#简介)
-  - [原理](#原理)
   - [要求](#要求)
+  - [原理](#原理)
   - [理想效果](#理想效果)
   - [现状](#现状)
   - [写在最后](#写在最后)
@@ -19,18 +19,6 @@
 
 [有示波器的地方，Bad apple可能会迟到，但从未缺席！](https://www.bilibili.com/video/BV1Et411W743)
 
-
-## 原理
-
-通过OpenCV逐帧读取视频，转换成灰度图并切割后通过socket发送至WinForm应用，其包含 $7 \times 7 = 49$ 个notifyIcon控件：
-
-```csharp
-//Main.Designer.cs
-private System.Windows.Forms.NotifyIcon[] notifyIcons = new System.Windows.Forms.NotifyIcon[49];
-```
-
-WinForm通过适当的格式转换将ICO格式的图片传给```notifyIcon```控件。
-
 ## 要求
 
 - Windows（11）
@@ -43,9 +31,21 @@ WinForm通过适当的格式转换将ICO格式的图片传给```notifyIcon```控
 - [米诺地尔生发酊](https://item.yiyaojd.com/100009773041.html)
 - [《活着》](http://product.dangdang.com/1612701486.html)余华，作家出版社
 
+
+## 原理
+
+通过OpenCV逐帧读取视频，转换成灰度图并切割后通过socket发送至WinForm应用，其包含 $7 \times 7 = 49$ 个notifyIcon控件：
+
+```csharp
+//Main.Designer.cs
+private System.Windows.Forms.NotifyIcon[] notifyIcons = new System.Windows.Forms.NotifyIcon[49];
+```
+
+WinForm通过适当的格式转换将ICO格式的图片传给```notifyIcon```控件。
+
 ## 理想效果
 
-<div align="center"><img src="./image/test.png" alt=""></div>
+<div align="center"><img src="./image/expected.png" alt=""></div>
 
 理想是丰满的，现实是骨感的。
 
@@ -81,6 +81,8 @@ private async void setNotifyIconAsync()
 ```
 
 考虑到TCP按序发送以及队列先进先出的特性，这里定义了一个循环自增的```counter```变量来确定收到的图片交给哪个```notifyIcon```控件。但实际运行起来会发生画面偏移的情况：
+
+<div align="center"><img src="./image/real.png" alt=""></div>
 
 ## 写在最后
 
