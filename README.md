@@ -21,7 +21,7 @@
 
 ## 要求
 
-- Windows（11）
+- Windows 10（Windows 11改变了系统托盘隐藏区的排放方式，  $49$ 个图标不按照 $7 \times 7$ 来摆放了…）
 - Visual Studio（2022）
 - .NET Framework（4.8）
 - C# 8.0
@@ -32,14 +32,12 @@
 
 ## 原理
 
-通过OpenCV逐帧读取视频，转换成灰度图并切割后通过socket发送至WinForm应用，其包含 $7 \times 7 = 49$ 个notifyIcon控件：
+通过OpenCV逐帧读取视频，转换成灰度图并切割分发至 $7 \times 7 = 49$ 个notifyIcon控件：
 
 ```csharp
 //Main.Designer.cs
 private System.Windows.Forms.NotifyIcon[] notifyIcons = new System.Windows.Forms.NotifyIcon[49];
 ```
-
-WinForm通过适当的格式转换将ICO格式的图片传给```notifyIcon```控件。
 
 ## 理想效果
 
@@ -49,38 +47,9 @@ WinForm通过适当的格式转换将ICO格式的图片传给```notifyIcon```控
 
 ## 现状
 
-算不上流畅播放，但是已经达到了惊人的 $3$ 帧每秒，毕竟一帧能看，两帧流畅，三帧电竞（~~逃~~）。此外，由于写代码的时间比上写readme的时间高达惊人的 $1:9$ ，目前还有以下问题没有解决（~~毕竟代码可以丑可以菜，readme一定要显得用心~~）：
-
-```csharp
-//Main.cs
-private async void setNotifyIconAsync()
-{
-    await Task.Run(() =>
-    {
-        int counter = 0;
-        while (true)
-        {
-            //System.Collections.Generic.Queue<T>是非线程安全的，因此访问它之前要上锁
-            mutex.WaitOne();
-            if (imageData.Count > 0)
-            {
-                var imgBytes = imageData.Dequeue();
-                var icon = bitmapToIcon(toGrayBitmap(imgBytes, 60, 60));
-                notifyIcons[counter].Icon = icon;
-                //要及时释放句柄，不然会内存泄漏，被Windows干掉
-                DestroyIcon(icon.Handle);
-                counter = counter >= 48 ? 0 : counter + 1;
-            }
-            //释放锁
-            mutex.ReleaseMutex();
-        }
-    });
-}
-```
-
-考虑到TCP按序发送以及队列先进先出的特性，这里定义了一个循环自增的```counter```变量来确定收到的图片交给哪个```notifyIcon```控件。但实际运行起来会发生画面偏移的情况：
-
-<div align="center"><img src="./image/real.png" alt=""></div>
+还没有解决的问题：
+- OpenCV转换后的灰度图，本来应该是白色的地方变成了黄色；
+- Windows在系统托盘隐藏区域的行为比较迷惑，```NotifyIcon```的排列比较随机。
 
 ## 写在最后
 
