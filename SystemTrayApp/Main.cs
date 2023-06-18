@@ -128,7 +128,7 @@ namespace SystemTrayApp
                         int i = 0;
                         while (true)
                         {
-                            if (matsQueue.Count >= 64)
+                            if (matsQueue.Count >= 32)
                             {
                                 await Task.Delay(100);
                                 continue;

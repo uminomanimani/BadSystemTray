@@ -69,7 +69,7 @@ namespace SystemTrayApp
             //
 
             //timer
-            timer.Interval = 67;
+            timer.Interval = 25;
             timer.Tick += TimerTick;
             timer.Enabled = false;
             timer.Enabled = true;

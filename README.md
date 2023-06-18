@@ -4,9 +4,7 @@
   - [简介](#简介)
   - [要求](#要求)
   - [原理](#原理)
-  - [理想效果](#理想效果)
-  - [现状](#现状)
-  - [写在最后](#写在最后)
+  - [效果预览](#效果预览)
 
 
 ## 简介
@@ -39,18 +37,6 @@
 private System.Windows.Forms.NotifyIcon[] notifyIcons = new System.Windows.Forms.NotifyIcon[49];
 ```
 
-## 理想效果
+## 效果预览
 
-<div align="center"><img src="./image/expected.png" alt=""></div>
-
-理想是丰满的，现实是骨感的。
-
-## 现状
-
-还没有解决的问题：
-- OpenCV转换后的灰度图，本来应该是白色的地方变成了黄色；
-- Windows在系统托盘隐藏区域的行为比较迷惑，```NotifyIcon```的排列比较随机。
-
-## 写在最后
-
-目前还没想到对策，随缘改吧，毕竟太菜。
+<div align="center"><img src="./image/preview.gif" alt=""></div>
