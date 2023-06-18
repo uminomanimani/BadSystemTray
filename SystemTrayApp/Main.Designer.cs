@@ -29,13 +29,17 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            button = new System.Windows.Forms.Button();
+            timer = new System.Windows.Forms.Timer(this.components);
+
+
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
-            for(int i = 0; i < notifyIcons.Length; i++)
+            for (int i = 0; i < notifyIcons.Length; i++)
             {
                 notifyIcons[i] = new System.Windows.Forms.NotifyIcon(this.components);
             }
 
-            for(int i = 0; i != notifyIcons.Length; i++)
+            for (int i = 0; i != notifyIcons.Length; i++)
             {
                 this.notifyIcons[i].Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
                 this.notifyIcons[i].Text = i.ToString();
@@ -48,7 +52,24 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(278, 244);
+            this.ClientSize = new System.Drawing.Size(300, 300);
+            this.ShowInTaskbar = true;
+            this.WindowState = System.Windows.Forms.FormWindowState.Normal;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+
+            //button
+            button.Size = new System.Drawing.Size(Width / 2, Height / 2);
+            button.Location = new System.Drawing.Point(50, 50);
+            button.Click += ButtonClick;
+            //
+
+            //timer
+            timer.Interval = 16;
+            timer.Tick += TimerTick;
+            timer.Enabled = false;
+
+            Controls.Add(button);
             this.Name = "Main";
             this.Text = "Form";
             this.ResumeLayout(false);
@@ -56,6 +77,8 @@
 
         #endregion
         private System.Windows.Forms.NotifyIcon[] notifyIcons = new System.Windows.Forms.NotifyIcon[49];
+        private System.Windows.Forms.Button button;
+        private System.Windows.Forms.Timer timer;
     }
 }
 

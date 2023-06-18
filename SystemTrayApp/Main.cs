@@ -16,13 +16,9 @@ namespace SystemTrayApp
         {
             InitializeComponent();
             InitMats();
-            ReadVideoFrameAsync();
-            DisplayAsync();
         }
         private Queue<Mat> MatsQueue = new Queue<Mat>();
-        //private bool Finished = false;
         Mutex QueueMutex = new Mutex();
-        //Mutex FinishedMutex = new Mutex();
         Rect[] rects = new Rect[49];
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         extern static bool DestroyIcon(IntPtr handle);
@@ -31,10 +27,10 @@ namespace SystemTrayApp
         {
             int i = 0;
             int PosX = 0;
-            while(PosX + size < 1080)
+            while (PosX + size < 1080)
             {
                 int PosY = 0;
-                while(PosY + size < 1080)
+                while (PosY + size < 1080)
                 {
                     rects[i] = new Rect(PosY, PosX, size, size);
                     ++i;
@@ -44,47 +40,67 @@ namespace SystemTrayApp
             }
         }
 
-        private async void DisplayAsync()
+        private void TimerTick(object sender, EventArgs e)
         {
-            await Task.Run(() => { DisplayCore(); });
+            DisplayOneFrame();
         }
 
-        private void DisplayCore()
+        private void DisplayOneFrame()
         {
-            while(true)
+            Mat Frame;
+            while (true)
             {
                 QueueMutex.WaitOne();
-                if(MatsQueue.Count == 0)
+                if (MatsQueue.Count == 0)
                 {
                     QueueMutex.ReleaseMutex();
-                    Thread.Sleep(100);
                     continue;
                 }
-                var Frame = MatsQueue.Dequeue();
+                Frame = MatsQueue.Dequeue();
                 QueueMutex.ReleaseMutex();
-                //Rect中，x是列，y是行
-                Rect r = new Rect(180, 0, 1080, 1080);
-                Mat Origin = new Mat(Frame, r);
-                Mat Gray = new Mat();
-                Cv2.CvtColor(Origin, Gray, ColorConversionCodes.BGR2GRAY);
-                int i = 0;
-                foreach (var rect in rects)
-                {
-                    Mat tmp = new Mat(Gray, rect);
-                    Bitmap bitmap = new Bitmap(tmp.Cols, tmp.Rows, (int)tmp.Step(), PixelFormat.Format8bppIndexed, tmp.Data);
-
-                    Icon icon = Icon.FromHandle(bitmap.GetHicon());
-
-                    notifyIcons[i].Icon = icon;
-                    DestroyIcon(icon.Handle);
-
-                    icon.Dispose();
-                    bitmap.Dispose();
-                    tmp.Dispose();
-
-                    ++i;
-                }
+                break;
             }
+
+            //Rect中，x是列，y是行
+            Rect r = new Rect(180, 0, 1080, 1080);
+            Mat Origin = new Mat(Frame, r);
+            Mat Gray = new Mat();
+            Cv2.CvtColor(Origin, Gray, ColorConversionCodes.RGB2GRAY);
+            for (int i = 0; i < rects.Length; ++i)
+            {
+                Mat tmp = new Mat(Gray, rects[i]);
+                Bitmap bitmap = new Bitmap(tmp.Cols, tmp.Rows, (int)tmp.Step(), PixelFormat.Format8bppIndexed, tmp.Data);
+                // 获取调色板
+                ColorPalette palette = bitmap.Palette;
+                // 设置白色为灰色
+                for (int m = 0; m < 256; m++)
+                {
+                    palette.Entries[m] = Color.FromArgb(m, m, m);
+                }
+                // 应用调色板
+                bitmap.Palette = palette;
+
+                Icon icon = Icon.FromHandle(bitmap.GetHicon());
+
+                notifyIcons[i].Icon = icon;
+                DestroyIcon(icon.Handle);
+
+                icon.Dispose();
+                bitmap.Dispose();
+                tmp.Dispose();
+            }
+
+            Origin.Dispose();
+            Gray.Dispose();
+            Frame.Dispose();
+        }
+
+        private void ButtonClick(object sender, EventArgs e)
+        {
+            ReadVideoFrameAsync();
+            Thread.Sleep(500);
+            timer.Enabled = true;
+            timer.Start();
         }
 
         private async void ReadVideoFrameAsync()
@@ -97,18 +113,32 @@ namespace SystemTrayApp
             string Path = @"Bad Apple.mp4";
             using (VideoCapture videoCapture = new VideoCapture(Path))
             {
-                if(!videoCapture.IsOpened())
+                if (!videoCapture.IsOpened())
                 {
-                    MessageBox.Show("Oops!");
+                    MessageBox.Show("Oops!没能打开" + Path + "...");
                     Environment.Exit(0);
                 }
                 Mat CapturedFrame = new Mat();
-                while(videoCapture.Read(CapturedFrame))
+                int i = 0;
+                while (true)
                 {
                     QueueMutex.WaitOne();
-                    MatsQueue.Enqueue(CapturedFrame);
+                    if (MatsQueue.Count >= 100)
+                    {
+                        QueueMutex.ReleaseMutex();
+                        Thread.Sleep(100);
+                        continue;
+                    }
+                    if (!videoCapture.Read(CapturedFrame))
+                    {
+                        QueueMutex.ReleaseMutex();
+                        break;
+                    }
+                    if (i % 4 == 0) MatsQueue.Enqueue(CapturedFrame.Clone());
                     QueueMutex.ReleaseMutex();
+                    ++i;
                 }
+                CapturedFrame.Dispose();
             }
         }
     }
