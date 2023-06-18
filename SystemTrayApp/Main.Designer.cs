@@ -1,4 +1,6 @@
-﻿namespace SystemTrayApp
+﻿using System.Drawing;
+
+namespace SystemTrayApp
 {
     partial class Main
     {
@@ -53,25 +55,29 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(300, 300);
-            this.ShowInTaskbar = true;
+            this.ShowInTaskbar = false;
             this.WindowState = System.Windows.Forms.FormWindowState.Normal;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
 
             //button
             button.Size = new System.Drawing.Size(Width / 2, Height / 2);
-            button.Location = new System.Drawing.Point(50, 50);
+            button.Location = new System.Drawing.Point(75, 75);
             button.Click += ButtonClick;
+            button.Text = "はじめよう!";
+            button.Font = new Font("微软雅黑", 9F, FontStyle.Bold, GraphicsUnit.Point);
             //
 
             //timer
-            timer.Interval = 16;
+            timer.Interval = 67;
             timer.Tick += TimerTick;
             timer.Enabled = false;
+            timer.Enabled = true;
+            //
 
             Controls.Add(button);
             this.Name = "Main";
-            this.Text = "Form";
+            this.Text = "BadSystemTray!!";
             this.ResumeLayout(false);
         }
 
