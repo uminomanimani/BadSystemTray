@@ -69,10 +69,9 @@ namespace SystemTrayApp
             //
 
             //timer
-            timer.Interval = 25;
+            timer.Interval = 66;
             timer.Tick += TimerTick;
             timer.Enabled = false;
-            timer.Enabled = true;
             //
 
             Controls.Add(button);

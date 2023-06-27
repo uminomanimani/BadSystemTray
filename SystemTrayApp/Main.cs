@@ -17,8 +17,15 @@ namespace SystemTrayApp
         {
             InitializeComponent();
             InitMats();
+            for (int i = 0; i < iconsQueue.Length; ++i)
+                iconsQueue[i] = new ConcurrentQueue<Icon> ();
         }
         private ConcurrentQueue<Mat> matsQueue = new ConcurrentQueue<Mat>();
+        private static ConcurrentQueue<Icon>[] iconsQueue = new ConcurrentQueue<Icon>[49];
+
+        int count = 0;
+        Mutex countMutex = new Mutex ();
+
         Rect[] rects = new Rect[49];
         bool finished = false;
         Mutex mutex = new Mutex();
@@ -44,62 +51,98 @@ namespace SystemTrayApp
 
         private void TimerTick(object sender, EventArgs e)
         {
-            if (DisplayOneFrame()) { }
-            else
-            {
-                timer.Stop();
-                timer.Enabled = false;
-            }
+            //if (DisplayOneFrame()) { }
+            //else
+            //{
+            //    timer.Stop();
+            //    timer.Enabled = false;
+            //}
+            Display();
         }
 
-        private bool DisplayOneFrame()
+        private async void SplitToBitmapsAsync()
         {
-            if(matsQueue.TryDequeue(out Mat Frame))
-            {
-                //Rect中，x是列，y是行
-                Rect r = new Rect(180, 0, 1080, 1080);
-                using (Mat Gray = new Mat())
-                using (Mat Origin = new Mat(Frame, r))
+            await Task.Run(async () => 
+            { 
+                while (true)
                 {
-                    Cv2.CvtColor(Origin, Gray, ColorConversionCodes.RGB2GRAY);
-                    for (int i = 0; i < rects.Length; ++i)
+                    countMutex.WaitOne();
+                    if (count >= 6)
                     {
-                        using (Mat tmp = new Mat(Gray, rects[i]))
-                        using (Bitmap bitmap = new Bitmap(tmp.Cols, tmp.Rows, (int)tmp.Step(), PixelFormat.Format8bppIndexed, tmp.Data))
+                        countMutex.ReleaseMutex();
+                        await Task.Delay(50);
+                        continue;
+                    }
+                    countMutex.ReleaseMutex();
+
+                    if (matsQueue.TryDequeue(out var frame))
+                    {
+                        countMutex.WaitOne();
+                        ++count;
+                        countMutex.ReleaseMutex();
+                        //Rect中，x是列，y是行
+                        Rect r = new Rect(180, 0, 1080, 1080);
+                        using (Mat Gray = new Mat())
+                        using (Mat Origin = new Mat(frame, r))
                         {
-                            // 获取调色板
-                            ColorPalette palette = bitmap.Palette;
-                            // 设置白色为灰色
-                            for (int m = 0; m < 256; m++)
+                            Cv2.CvtColor(Origin, Gray, ColorConversionCodes.RGB2GRAY);
+                            for (int i = 0; i < rects.Length; ++i)
                             {
-                                palette.Entries[m] = Color.FromArgb(m, m, m);
+                                using (Mat tmp = new Mat(Gray, rects[i]))
+                                using (Bitmap bitmap = new Bitmap(tmp.Cols, tmp.Rows, (int)tmp.Step(), PixelFormat.Format8bppIndexed, tmp.Data))
+                                {
+                                    // 获取调色板
+                                    ColorPalette palette = bitmap.Palette;
+                                    // 设置白色为灰色
+                                    for (int m = 0; m < 256; m++)
+                                    {
+                                        palette.Entries[m] = Color.FromArgb(m, m, m);
+                                    }
+                                    // 应用调色板
+                                    bitmap.Palette = palette;
+                                    //Bitmap bitmapCopy = ((Bitmap)bitmap.Clone());
+                                    // 将复制后的对象放入队列
+                                    Icon icon = Icon.FromHandle(bitmap.GetHicon());
+                                    iconsQueue[i].Enqueue((Icon)icon.Clone());
+
+                                    DestroyIcon(icon.Handle);
+                                    icon.Dispose();
+                                }
                             }
-                            // 应用调色板
-                            bitmap.Palette = palette;
+                        }
+                    }
+                    else
+                    {
 
-                            Icon icon = Icon.FromHandle(bitmap.GetHicon());
-
-                            notifyIcons[i].Icon = icon;
-                            DestroyIcon(icon.Handle);
-
-                            icon.Dispose();
-                        }   
-                    }                  
+                    }
                 }
-                Frame.Dispose();
-                return true;
-            }
-            else
+            });
+        }
+
+        private void Display()
+        {
+            for (int i = 0; i < notifyIcons.Length; ++i) 
             {
-                mutex.WaitOne();
-                if (matsQueue.Count == 0 && finished)
+                if (iconsQueue[i].TryDequeue(out var icon))
                 {
-                    mutex.ReleaseMutex();
-                    return false;
+                    notifyIcons[i].Icon = icon;
+                    DestroyIcon(icon.Handle);
+                    icon.Dispose();
                 }
-                mutex.ReleaseMutex();
-                return true;
+                else
+                {
+                    mutex.WaitOne();
+                    if (finished)
+                    {
+                        mutex.ReleaseMutex();
+                        return;
+                    }
+                    mutex.ReleaseMutex();
+                }
             }
+            countMutex.WaitOne();
+            --count;
+            countMutex.ReleaseMutex();
         }
 
         private void ButtonClick(object sender, EventArgs e)
@@ -107,6 +150,7 @@ namespace SystemTrayApp
             button.Enabled = false;
             ReadVideoFrameAsync();
             Thread.Sleep(500);
+            SplitToBitmapsAsync();
             timer.Enabled = true;
             timer.Start();
         }
@@ -130,7 +174,7 @@ namespace SystemTrayApp
                         {
                             if (matsQueue.Count >= 32)
                             {
-                                await Task.Delay(100);
+                                await Task.Delay(50);
                                 continue;
                             }
                             if (!videoCapture.Read(CapturedFrame))
@@ -140,7 +184,7 @@ namespace SystemTrayApp
                                 mutex.ReleaseMutex();
                                 break;
                             }
-                            if (i % 4 == 0) matsQueue.Enqueue(CapturedFrame.Clone());
+                            if (i % 5 == 0) matsQueue.Enqueue(CapturedFrame.Clone());
                             i += 1;
                         }
                     }
