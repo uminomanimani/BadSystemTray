@@ -16,23 +16,24 @@ namespace SystemTrayApp
         public Main()
         {
             InitializeComponent();
-            InitMats();
+            InitMats(100 * 1080 / (282 * columnCount - 182), 182 * 1080 / (282 * columnCount - 182));
             for (int i = 0; i < iconsQueue.Length; ++i)
                 iconsQueue[i] = new ConcurrentQueue<Icon> ();
         }
+        private static int columnCount = 6;
         private ConcurrentQueue<Mat> matsQueue = new ConcurrentQueue<Mat>();
-        private static ConcurrentQueue<Icon>[] iconsQueue = new ConcurrentQueue<Icon>[49];
+        private ConcurrentQueue<Icon>[] iconsQueue = new ConcurrentQueue<Icon>[columnCount * columnCount];
 
         int count = 0;
         Mutex countMutex = new Mutex ();
 
-        Rect[] rects = new Rect[49];
+        Rect[] rects = new Rect[columnCount * columnCount];
         bool finished = false;
         Mutex mutex = new Mutex();
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         extern static bool DestroyIcon(IntPtr handle);
-
-        private void InitMats(int size = 100 * 1080 / 1792, int stride = 182 * 1080 / 1792)
+        
+        private void InitMats(int size, int stride)
         {
             int i = 0;
             int PosX = 0;
@@ -67,7 +68,7 @@ namespace SystemTrayApp
                 while (true)
                 {
                     countMutex.WaitOne();
-                    if (count >= 6)
+                    if (count >= 5)
                     {
                         countMutex.ReleaseMutex();
                         await Task.Delay(50);
@@ -149,7 +150,7 @@ namespace SystemTrayApp
         {
             button.Enabled = false;
             ReadVideoFrameAsync();
-            Thread.Sleep(500);
+            // Thread.Sleep(500);
             SplitToBitmapsAsync();
             timer.Enabled = true;
             timer.Start();
@@ -172,7 +173,7 @@ namespace SystemTrayApp
                         int i = 0;
                         while (true)
                         {
-                            if (matsQueue.Count >= 32)
+                            if (matsQueue.Count >= 10)
                             {
                                 await Task.Delay(50);
                                 continue;
@@ -184,7 +185,7 @@ namespace SystemTrayApp
                                 mutex.ReleaseMutex();
                                 break;
                             }
-                            if (i % 5 == 0) matsQueue.Enqueue(CapturedFrame.Clone());
+                            if (i % 4 == 0) matsQueue.Enqueue(CapturedFrame.Clone());
                             i += 1;
                         }
                     }

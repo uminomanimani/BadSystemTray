@@ -69,7 +69,7 @@ namespace SystemTrayApp
             //
 
             //timer
-            timer.Interval = 66;
+            timer.Interval = 63;
             timer.Tick += TimerTick;
             timer.Enabled = false;
             //
@@ -81,7 +81,7 @@ namespace SystemTrayApp
         }
 
         #endregion
-        private System.Windows.Forms.NotifyIcon[] notifyIcons = new System.Windows.Forms.NotifyIcon[49];
+        private System.Windows.Forms.NotifyIcon[] notifyIcons = new System.Windows.Forms.NotifyIcon[columnCount * columnCount];
         private System.Windows.Forms.Button button;
         private System.Windows.Forms.Timer timer;
     }
