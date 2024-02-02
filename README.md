@@ -17,6 +17,8 @@
 
 [有示波器的地方，Bad apple可能会迟到，但从未缺席！](https://www.bilibili.com/video/BV1Et411W743)
 
+[有屏幕的地方就有badapple！—CRT室外全彩拼接大屏像素管聚焦测试](https://www.bilibili.com/video/BV1Zu4y1w7E2/)
+
 ## 要求
 
 - Windows 10（Windows 11改变了系统托盘隐藏区的排放方式，  $49$ 个图标不按照 $7 \times 7$ 来摆放了…）
