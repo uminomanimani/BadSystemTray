@@ -1,13 +1,16 @@
-# 一个在系统托盘图标阵列中播放Bad Apple!!的项目
+# 一个在系统托盘图标阵列中播放Bad Apple!!的整活
 
-- [一个在系统托盘图标阵列中播放Bad Apple!!的项目](#一个在系统托盘图标阵列中播放bad-apple的项目)
+- [一个在系统托盘图标阵列中播放Bad Apple!!的整活](#一个在系统托盘图标阵列中播放bad-apple的整活)
   - [简介](#简介)
   - [要求](#要求)
   - [原理](#原理)
   - [效果预览](#效果预览)
+  - [对了](#对了)
 
 
 ## 简介
+
+人们总是热衷于尝试将bad apple在奇怪的地方播放。
 
 [中文维基](https://zh.m.wikipedia.org/zh-hans/Bad_Apple!!)
 
@@ -32,7 +35,7 @@
 
 ## 原理
 
-通过OpenCV逐帧读取视频，转换成灰度图并切割分发至 $7 \times 7 = 49$ 个notifyIcon控件：
+通过OpenCV逐帧读取视频，转换成灰度图并切割分发至 $7 \times 7 = 49$ 个notifyIcon控件（36、25也可以），当然您得考虑图标的大小和它们之间的位置，类似于图像卷积中的```kernel_size```和```stride```：
 
 ```csharp
 //Main.Designer.cs
@@ -42,3 +45,9 @@ private System.Windows.Forms.NotifyIcon[] notifyIcons = new System.Windows.Forms
 ## 效果预览
 
 <div align="center"><img src="./image/preview.gif" alt=""></div>
+
+## 对了
+
+因为不知道怎么干预系统托盘图标在隐藏区的位置，也没找到合适的API来获取它们出现的位置，所以需要您用鼠标来拖动，将他们按照顺序排列（滑稽）。
+
+还有，因为难以控制将数据渲染在```notifyIcon```的时间，所以这个播放的速度和原视频的速度是不一样的。
