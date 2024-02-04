@@ -50,4 +50,4 @@ private System.Windows.Forms.NotifyIcon[] notifyIcons = new System.Windows.Forms
 
 因为不知道怎么干预系统托盘图标在隐藏区的位置，也没找到合适的API来获取它们出现的位置，所以需要您用鼠标来拖动，将他们按照顺序排列（滑稽）。
 
-还有，因为难以控制将数据渲染在```notifyIcon```的时间，所以这个播放的速度和原视频的速度是不一样的。
+还有，因为难以控制将数据渲染在```notifyIcon```的时间，所以这个播放的速度和原视频的速度是不一样的。您可以使用[Adobe After Effects](https://www.adobe.com/products/aftereffects)来实现更好的效果。
