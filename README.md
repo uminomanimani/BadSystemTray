@@ -24,10 +24,14 @@
 
 ## 要求
 
+您需要在NuGet中安装OpenCvSharp4。
+
 - Windows 10（Windows 11改变了系统托盘隐藏区的排放方式，  $49$ 个图标不按照 $7 \times 7$ 来摆放了…）
 - Visual Studio（2022）
 - .NET Framework（4.8）
 - C# 8.0
+- OpenCvSharp4 4.9.0
+- OpenCvSharp4.runtime.win 4.9.0
 - [速效救心丸](https://item.jkcsjd.com/3810395.html)
 - [米诺地尔生发酊](https://item.yiyaojd.com/100009773041.html)
 - [《活着》](http://product.dangdang.com/1612701486.html)余华，作家出版社
