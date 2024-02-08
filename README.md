@@ -3,6 +3,7 @@
 - [一个在系统托盘图标阵列中播放Bad Apple!!的整活](#一个在系统托盘图标阵列中播放bad-apple的整活)
   - [简介](#简介)
   - [要求](#要求)
+  - [配置](#配置)
   - [原理](#原理)
   - [效果预览](#效果预览)
   - [对了](#对了)
@@ -36,14 +37,57 @@
 - [米诺地尔生发酊](https://item.yiyaojd.com/100009773041.html)
 - [《活着》](http://product.dangdang.com/1612701486.html)余华，作家出版社
 
+## 配置
+
+不知道要什么配置，说一下自己的：
+
+- 处理器：AMD Ryzen 7 5800H with Radeon Graphics 3.20 GHz
+- RAM：32GB DDR4
+- GPU：NVIDIA GeForce RTX 3070 Laptop GPU
 
 ## 原理
 
-通过OpenCV逐帧读取视频，转换成灰度图并切割分发至 $7 \times 7 = 49$ 个notifyIcon控件（36、25也可以），当然您得考虑图标的大小和它们之间的位置，类似于图像卷积中的```kernel_size```和```stride```：
+通过OpenCV逐帧读取视频：
+
+```csharp
+using (VideoCapture videoCapture = new VideoCapture(Path))
+{
+    ...
+}
+```
+
+当然可能不需要这么高的帧率，所以可以对其进行采样，每4帧只采样1帧：
+```csharp
+if (i % 4 == 0) matsQueue.Enqueue(CapturedFrame.Clone());
+```
+
+转换成灰度图并切割分发至 $7 \times 7 = 49$ 个notifyIcon控件（36、25也可以）:
 
 ```csharp
 //Main.Designer.cs
 private System.Windows.Forms.NotifyIcon[] notifyIcons = new System.Windows.Forms.NotifyIcon[49];
+```
+
+当然您得考虑图标的大小和它们之间的间隔，类似于图像卷积中的```kernel_size```和```stride```：
+
+```csharp
+//Main.cs
+private void InitMats(int size, int stride)
+{
+    int i = 0;
+    int PosX = 0;
+    while (PosX + size < 1080)
+    {
+        int PosY = 0;
+        while (PosY + size < 1080)
+        {
+            rects[i] = new Rect(PosY, PosX, size, size);
+            ++i;
+            PosY = PosY + size + stride;
+        }
+        PosX = PosX + size + stride;
+    }
+}
 ```
 
 ## 效果预览
