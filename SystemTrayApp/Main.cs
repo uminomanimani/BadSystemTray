@@ -126,9 +126,11 @@ namespace SystemTrayApp
             {
                 if (iconsQueue[i].TryDequeue(out var icon))
                 {
+                    var oldIcon = notifyIcons[i].Icon;
+                    oldIcon?.Dispose();
                     notifyIcons[i].Icon = icon;
-                    DestroyIcon(icon.Handle);
-                    icon.Dispose();
+                    // DestroyIcon(icon.Handle);
+                    // icon.Dispose();
                 }
                 else
                 {
